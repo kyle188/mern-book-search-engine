@@ -25,7 +25,7 @@ app.use(routes);
 db.once('open', async () => {
   await apolloServer.start()
   
-  app.use(expressMiddleware(apolloServer))
+  app.use('/graphql', expressMiddleware(apolloServer))
   console.log(`Apollo GraphQL Playground at http://localhost:${PORT}/graphql`)
 
   app.listen(PORT, () => console.log(`🌍 Now listening on localhost:${PORT}`));
