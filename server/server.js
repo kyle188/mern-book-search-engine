@@ -2,10 +2,11 @@ const express = require('express');
 const path = require('path');
 const { ApolloServer } = require('@apollo/server')
 const { expressMiddleware } = require('@apollo/server/express4')
-const {typeDefs, resolvers} = require('./schemas')
-
+const typeDefs = require('./schemas/typeDefs')
+const resolvers = require('./schemas/resolvers')
+const { authMiddleware } = require('./utils/auth')
 const db = require('./config/connection');
-const routes = require('./routes');
+// const routes = require('./routes');
 const apolloServer = new ApolloServer({ typeDefs, resolvers })
 
 const app = express();
@@ -19,12 +20,14 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 }
 
-app.use(routes);
+// app.use(routes);
 
 db.once('open', async () => {
   await apolloServer.start()
   
-  app.use('/graphql', expressMiddleware(apolloServer))
+  app.use('/graphql', expressMiddleware(apolloServer, {
+    context: authMiddleware
+  }))
   console.log(`Apollo GraphQL Playground at http://localhost:${PORT}/graphql`)
 
   app.listen(PORT, () => console.log(`🌍 Now listening on localhost:${PORT}`));
